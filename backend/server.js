@@ -23,10 +23,12 @@ app.post('/compress', upload.single('image'), async (req, res) => {
     // Kompresi hanya untuk JPEG/JPG/PNG
     if (fileType === 'image/jpeg' || fileType === 'image/jpg') {
       outputBuffer = await sharp(inputBuffer)
+        .autoOrient()
         .jpeg({ quality: Math.round(Number(quality) * 100) })
         .toBuffer();
     } else if (fileType === 'image/png') {
       outputBuffer = await sharp(inputBuffer)
+        .autoOrient()
         .png({ quality: Math.round(Number(quality) * 100), compressionLevel: 9 })
         .toBuffer();
     } else {

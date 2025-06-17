@@ -326,3 +326,126 @@ body {
     text-align: center;
   }
 }
+
+/* Preview Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  overflow-y: auto;
+}
+
+.modal-content h3 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 25px;
+  font-size: 1.8rem;
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.close-btn:hover {
+  background: #c0392b;
+}
+
+.comparison-container {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap; /* Untuk responsif */
+}
+
+.image-wrapper {
+  flex: 1;
+  min-width: 280px;
+  max-width: 45%;
+  text-align: center;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.image-wrapper h4 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+}
+
+.image-wrapper img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.preview-btn {
+  padding: 8px 16px;
+  background: #8e44ad;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 10px;
+}
+
+.preview-btn:hover {
+  background: #6a328d;
+  transform: translateY(-1px);
+}
+
+/* Responsive design untuk modal */
+@media (max-width: 768px) {
+  .modal-content {
+    padding: 20px;
+  }
+
+  .modal-content h3 {
+    font-size: 1.5rem;
+  }
+
+  .comparison-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .image-wrapper {
+    max-width: 100%;
+  }
+}

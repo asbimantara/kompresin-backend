@@ -2,20 +2,24 @@ import { useState } from 'react'
 import imageCompression from 'browser-image-compression'
 import './App.css'
 
+const API_BASE_URL = 'https://kompresin-backend.onrender.com'; // Ganti dengan URL backend Render-mu
+
 function App() {
   const [selectedFiles, setSelectedFiles] = useState([])
   const [activeTab, setActiveTab] = useState('preset') // 'preset' atau 'slider'
-  const [selectedPreset, setSelectedPreset] = useState('kilat') // default preset
+  const [selectedPreset, setSelectedPreset] = useState('drastis') // default preset menjadi drastis
   const [customCompression, setCustomCompression] = useState(50)
   const [isCompressing, setIsCompressing] = useState(false)
   const [compressedFiles, setCompressedFiles] = useState([])
+  const [showPreviewModal, setShowPreviewModal] = useState(false) // State untuk kontrol modal preview
+  const [currentPreview, setCurrentPreview] = useState(null) // Menyimpan data gambar yang akan dipreview
   const MIN_IMAGE_SIZE = 50 * 1024; // 50 KB
 
   // Preset mapping
   const presetOptions = [
-    { key: 'drastis', label: 'Drastis (Kompresi 80%)', percent: 80 },
-    { key: 'normal', label: 'Normal (Kompresi 60%)', percent: 60 },
-    { key: 'sedikit', label: 'Sedikit (Kompresi 20%)', percent: 20 },
+    { key: 'drastis', label: 'Drastis', percent: 80 },
+    { key: 'normal', label: 'Normal', percent: 60 },
+    { key: 'kualitas', label: 'Kualitas', percent: 20 },
   ]
 
   const handleFileSelect = (event) => {
@@ -29,7 +33,8 @@ function App() {
     setSelectedFiles(imageFiles.map(file => ({
       file,
       id: Math.random().toString(36).substr(2, 9),
-      originalSize: file.size
+      originalSize: file.size,
+      originalUrl: URL.createObjectURL(file) // Simpan URL gambar asli
     })))
   }
 
@@ -43,7 +48,6 @@ function App() {
   }
 
   const handleCompress = async () => {
-    // Validasi ukuran file
     const tooSmall = selectedFiles.some(item => item.originalSize < MIN_IMAGE_SIZE)
     if (tooSmall) {
       alert('Ukuran file gambar minimal yang bisa dikompres adalah 50 KB.')
@@ -58,22 +62,37 @@ function App() {
       } else {
         compressionPercent = customCompression
       }
+
       const compressedResults = await Promise.all(
         selectedFiles.map(async (item) => {
-          const options = getCompressionOptions(compressionPercent)
-          const compressedFile = await imageCompression(item.file, options)
+          const formData = new FormData()
+          formData.append('image', item.file)
+          formData.append('quality', (1 - (compressionPercent / 100)).toFixed(2)) // Quality antara 0.0 - 1.0
+
+          const response = await fetch(`${API_BASE_URL}/compress`, {
+            method: 'POST',
+            body: formData,
+          })
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+
+          const blob = await response.blob()
+          
           return {
             ...item,
-            compressedFile,
-            compressedSize: compressedFile.size,
-            downloadUrl: URL.createObjectURL(compressedFile)
+            compressedFile: blob,
+            compressedSize: blob.size,
+            downloadUrl: URL.createObjectURL(blob),
           }
         })
       )
+      
       setCompressedFiles(compressedResults)
     } catch (error) {
       console.error('Error compressing images:', error)
-      alert('Terjadi kesalahan saat mengompres gambar. Silakan coba lagi.')
+      alert('Terjadi kesalahan saat mengompres gambar atau koneksi ke server. Silakan coba lagi.')
     } finally {
       setIsCompressing(false)
     }
@@ -195,11 +214,39 @@ function App() {
                 >
                   Download
                 </a>
+                <button 
+                  onClick={() => {
+                    setCurrentPreview(item)
+                    setShowPreviewModal(true)
+                  }}
+                  className="preview-btn"
+                >
+                  Lihat Perbandingan
+                </button>
               </div>
             ))}
           </div>
         )}
       </main>
+
+      {showPreviewModal && currentPreview && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button className="close-btn" onClick={() => setShowPreviewModal(false)}>X</button>
+            <h3>Perbandingan Gambar</h3>
+            <div className="comparison-container">
+              <div className="image-wrapper">
+                <h4>Asli ({formatFileSize(currentPreview.originalSize)})</h4>
+                <img src={currentPreview.originalUrl} alt="Original" />
+              </div>
+              <div className="image-wrapper">
+                <h4>Kompresi ({formatFileSize(currentPreview.compressedSize)})</h4>
+                <img src={currentPreview.downloadUrl} alt="Compressed" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <footer className="footer">
         <p>Dibuat oleh Bima - Teknologi Multimedia 4TIF C</p>
